@@ -4,7 +4,7 @@ local root = {}
 
 function root:Enter(hsm)
   print("root: Enter")
-  if hsm.isCurrent() and hsm.switchTo("s1") then
+  if hsm:isCurrent() and hsm:switchTo("s1") then
     return true
   end
 end
