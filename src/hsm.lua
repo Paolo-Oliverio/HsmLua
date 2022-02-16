@@ -106,6 +106,8 @@ do
     o.current = nil
     -- the state being executed at the moment
     o.working = nil
+    -- the state we are going to go
+    o.next = nil
     -- the name of the received event
     o.e = ""
     -- the data sent with the received event
@@ -139,12 +141,7 @@ do
     @param to : state
   ]]
   function M:h_call(sHook, tFrom, tTo)
-    self.e = sHook
-    if tFrom == tTo or tFrom == tTo.parent then
-      self.working = tTo
-      local _ = tTo.obj[sHook] and tTo.obj[sHook](nil, self)
-      return
-    end
+    self.e = sHook    
     -- leaf to root for Exit hook
     if sHook == "Exit" then
       repeat
@@ -152,7 +149,15 @@ do
           tTo.obj[sHook](tTo.obj, self)
         end
         tTo = tTo.parent
-      until not tTo
+      until tTo == tFrom
+      return
+    end
+    if tFrom == tTo or tFrom == tTo.parent then
+      self.working = tTo
+      local _ = tTo.obj[sHook] and tTo.obj[sHook](nil, self)
+      if (self.next) then
+        self:_switch_to(self.next)
+      end
       return
     end
     -- root to leaf for non Exit Hooks
@@ -165,8 +170,11 @@ do
     for i = l, 1, -1 do
       local s = tPath[i]
       if s.obj[sHook] and s.obj[sHook](s.obj, self) then
-        return
+        break
       end
+    end
+    if(self.next) then
+      self:_switch_to(self.next)
     end
   end
 
@@ -185,7 +193,11 @@ do
         self.working = s
         -- stop bubbling if return true
         if s.obj:Event(self) then
-          return
+          if (self.next) then
+            self.eData = nil
+            self:_switch_to(self.next)
+          end
+          return true
         end
       end
       s = s.parent
@@ -194,7 +206,10 @@ do
       end
     until false
     self.eData = nil
-    return nil
+    if (self.next) then
+      self:_switch_to(self.next)
+    end
+    return false
   end
 
   --[[
@@ -218,18 +233,25 @@ do
     return nil
   end
 
+  function M:switch_to(name)
+    local target = self.model:get_state(name)
+    if not target then
+      return false
+    end
+    self.next = target
+    return true
+  end
+
   --[[
     Default state transition
     @param name : string
     @return : boolean true if transition is successful false if not
   ]]
-  function M:switch_to(name)
+  function M:_switch_to(target)
+    self.next = nil
+    local name = target.name
     local from = self.e == "Enter" and self.working or self.current
     local ancestor = from.commonAncestorsCache[name]
-    local target = self.model:get_state(name)
-    if not target then
-      return false
-    end
     if ancestor == nil then
       ancestor = self:_find_common_ancestor(from, target)
       --caching nil as -1 to properly cache it
@@ -240,10 +262,10 @@ do
     if (ancestor ~= from) then
       self:h_call("Exit", ancestor, from)
     end
+    
     self.current = target
     self:h_call("Enter", ancestor, target)
     self.working = target
-    return true
   end
 
   --[[
