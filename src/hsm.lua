@@ -113,6 +113,7 @@ do
     -- the data sent with the received event
     o.eData = nil
     o.model = model
+    o.tPath = {}
     o.__index = o
     if model.depfix then
       model:_fix_dependencies()
@@ -161,14 +162,15 @@ do
       return
     end
     -- root to leaf for non Exit Hooks
-    local tPath = {}
+    local l = 0
     repeat
-      table.insert(tPath, tTo)
+      l = l + 1
+      self.tPath[l] = tTo
+      --table.insert(tPath, tTo)
       tTo = tTo.parent
     until not tTo
-    local l = #tPath
     for i = l, 1, -1 do
-      local s = tPath[i]
+      local s = self.tPath[i]
       if s.obj[sHook] and s.obj[sHook](s.obj, self) then
         break
       end
