@@ -5,8 +5,7 @@ local root = {}
 function root:Enter(hsm)
   print("root: Enter")
   if hsm:is_current() then
-    --return 
-    hsm:switch_to("s1")
+    return hsm:switch_to("s1")
   end
 end
 
