@@ -152,7 +152,7 @@ do
           tTo.obj[sHook](tTo.obj, self)
         end
         tTo = tTo.parent
-      until not (tTo ~= nil)
+      until not tTo
       return
     end
     -- root to leaf for non Exit Hooks
@@ -160,7 +160,7 @@ do
     repeat
       table.insert(tPath, tTo)
       tTo = tTo.parent
-    until not (tTo ~= nil)
+    until not tTo
     local l = #tPath
     for i = l, 1, -1 do
       local s = tPath[i]
@@ -211,10 +211,10 @@ do
             end
             t = t.parent
           end
-        until not (t ~= nil)
+        until not t
         s = s.parent
       end
-    until not (s ~= nil)
+    until not s
     return nil
   end
 
@@ -232,8 +232,11 @@ do
     end
     if ancestor == nil then
       ancestor = self:_find_common_ancestor(from, target)
-      from.commonAncestorsCache[name] = ancestor
+      --caching nil as -1 to properly cache it
+      from.commonAncestorsCache[name] = ancestor or -1
     end
+    -- To fix caching null as -1
+    ancestor = ancestor == -1 and nil or ancestor
     if (ancestor ~= from) then
       self:h_call("Exit", ancestor, from)
     end
