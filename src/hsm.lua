@@ -171,7 +171,7 @@ do
     until not tTo
     for i = l, 1, -1 do
       local s = self.tPath[i]
-      if s.obj[sHook] and s.obj[sHook](s.obj, self) then
+      if self.next or (s.obj[sHook] and s.obj[sHook](s.obj, self)) then
         break
       end
     end
