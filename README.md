@@ -12,6 +12,3 @@ states are tables who support one or more of these hooks:
 plans:
 *  use flag to cancel loops on switch_to without proper manual return value.
 *  specific regions ( composite, utility ,random etc like in hfsm2)
-
-issues:
-*  transitions with no common ancestor will not get cached due to parent being nil this is solved by using a unique non nil root ancestor for the entire state machine so it can be stored correctly. fix will probably use a negative value instead of nil
