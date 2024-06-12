@@ -1,6 +1,6 @@
 # HsmLua
-Hierarchical state machine in lua made mainly to add state machines to Crayta
-Originally written in ts and then converted automatically with my crayta-typescript toolset.
+Hierarchical state machine in lua made mainly for games.
+Originally written in ts and then converted programmatically to lua.
 
 states are tables who support one or more of these hooks:
 *  Enter called on all the newely entered states on state change can be cancelled returning true in case of state change while executing.
